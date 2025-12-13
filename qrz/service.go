@@ -2,20 +2,22 @@ package qrz
 
 import (
 	"context"
-	"github.com/Station-Manager/errors"
-	"github.com/Station-Manager/utils"
 	"io"
 	"net/url"
 	"strings"
 	"sync"
 	"time"
 
-	"github.com/Station-Manager/config"
-	"github.com/Station-Manager/database"
-	"github.com/Station-Manager/logging"
-	"github.com/Station-Manager/types"
+	"github.com/Station-Manager/database/sqlite"
+	"github.com/Station-Manager/errors"
+	"github.com/Station-Manager/utils"
+
 	"net/http"
 	"sync/atomic"
+
+	"github.com/Station-Manager/config"
+	"github.com/Station-Manager/logging"
+	"github.com/Station-Manager/types"
 )
 
 // ServiceName is the name of the service and is used to look up the service in the container.
@@ -24,9 +26,9 @@ const ServiceName = types.QrzForwardingServiceName
 // Service represents a core FORWARDING structure facilitating interaction between logging, configuration, database,
 // and HTTP services. It allows for dependency injection and manages initialization state effectively.
 type Service struct {
-	LoggerService   *logging.Service  `di.inject:"loggingservice"`
-	ConfigService   *config.Service   `di.inject:"configservice"`
-	DatabaseService database.Database `di.inject:"databaseservice"`
+	LoggerService   *logging.Service `di.inject:"loggingservice"`
+	ConfigService   *config.Service  `di.inject:"configservice"`
+	DatabaseService *sqlite.Service  `di.inject:"databaseservice"`
 	Config          *types.ForwarderConfig
 	client          *http.Client
 
@@ -96,13 +98,14 @@ func (s *Service) Forward(qso types.Qso, param ...string) error {
 		return errors.New(op).Msg("service not initialized")
 	}
 
-	//replace := ""
-	//if len(param) > 0 {
-	//	if param[0] != ActionReplace {
-	//		return errors.New(op).Msgf("unsupported action (%s only): %s", param[0], ActionReplace)
-	//	}
-	//	replace = ActionReplace
-	//}
+	action := ActionInsert
+	if len(param) > 0 {
+		if param[0] != ActionReplace {
+			return errors.New(op).Msgf("unsupported action (%s only): %s", param[0], ActionReplace)
+		}
+		action = ActionReplace
+
+	}
 
 	u, err := url.Parse(s.Config.URL)
 	if err != nil {
@@ -112,7 +115,7 @@ func (s *Service) Forward(qso types.Qso, param ...string) error {
 	payload := "Test"
 	form := url.Values{
 		"KEY":    {s.Config.APIKey},
-		"ACTION": {ActionInsert},
+		"ACTION": {action},
 		"ADIF":   {payload},
 	}
 
@@ -120,6 +123,7 @@ func (s *Service) Forward(qso types.Qso, param ...string) error {
 	if err != nil {
 		return errors.New(op).Err(err).Msg("Failed to create HTTP GET request")
 	}
+
 	req.Header.Set("User-Agent", s.Config.UserAgent)
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 
@@ -156,8 +160,6 @@ func (s *Service) Forward(qso types.Qso, param ...string) error {
 	if err = s.updateDatabase(qso); err != nil {
 		return errors.New(op).Err(err).Msg("updating database")
 	}
-
-	s.LoggerService.DebugWith().Str("callsign", qso.Call).Msg("Successfully forwarded QSO to QRZ.com")
 
 	return nil
 }

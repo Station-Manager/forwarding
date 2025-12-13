@@ -3,6 +3,7 @@ package qrz
 import (
 	"github.com/Station-Manager/errors"
 	"github.com/Station-Manager/types"
+	"github.com/Station-Manager/utils"
 )
 
 // updateDatabase updates the local database with the provided QSO record.
@@ -15,12 +16,12 @@ func (s *Service) updateDatabase(qso types.Qso) error {
 		return errors.New(op).Msgf("invalid QSO ID, unable to update: %d", qso.ID)
 	}
 
-	//model.QrzcomQsoUploadStatus = null.StringFrom("Y")
-	//model.QrzcomQsoUploadDate = null.StringFrom(utils.DateNowAsYYYYMMDD())
-	//
-	//if _, err = model.Update(context.Background(), s.DatabaseService.Conn(), boil.Infer()); err != nil {
-	//	return errors.New(op).WithErrorf("updating database: %w", err)
-	//}
+	qso.QrzComUploadStatus = "Y"
+	qso.QrzComUploadDate = utils.DateNowAsYYYYMMDD()
+
+	if err := s.DatabaseService.UpdateQso(qso); err != nil {
+		return errors.New(op).Err(err).Msg("updating database")
+	}
 
 	return nil
 }
