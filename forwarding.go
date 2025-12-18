@@ -30,7 +30,4 @@ type Forwarder interface {
 	// service. Implementations should be safe to call after successful
 	// initialization (when applicable) and respect any configured timeouts.
 	Forward(qso types.Qso, param ...string) error
-
-	// IsEnabled returns true if the forwarder is enabled via configuration.
-	IsEnabled() bool
 }

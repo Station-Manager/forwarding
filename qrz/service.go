@@ -3,21 +3,19 @@ package qrz
 import (
 	"context"
 	"io"
+	"net/http"
 	"net/url"
 	"strings"
 	"sync"
+	"sync/atomic"
 	"time"
 
+	"github.com/Station-Manager/config"
 	"github.com/Station-Manager/database/sqlite"
 	"github.com/Station-Manager/errors"
-	"github.com/Station-Manager/utils"
-
-	"net/http"
-	"sync/atomic"
-
-	"github.com/Station-Manager/config"
 	"github.com/Station-Manager/logging"
 	"github.com/Station-Manager/types"
+	"github.com/Station-Manager/utils"
 )
 
 // ServiceName is the name of the service and is used to look up the service in the container.
@@ -28,7 +26,7 @@ const ServiceName = types.QrzForwardingServiceName
 type Service struct {
 	LoggerService   *logging.Service `di.inject:"loggingservice"`
 	ConfigService   *config.Service  `di.inject:"configservice"`
-	DatabaseService *sqlite.Service  `di.inject:"databaseservice"`
+	DatabaseService *sqlite.Service  `di.inject:"sqliteservice"`
 	Config          *types.ForwarderConfig
 	client          *http.Client
 
