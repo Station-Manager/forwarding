@@ -10,6 +10,7 @@ import (
 	"sync/atomic"
 	"time"
 
+	"github.com/Station-Manager/adif"
 	"github.com/Station-Manager/config"
 	"github.com/Station-Manager/database/sqlite"
 	"github.com/Station-Manager/errors"
@@ -110,7 +111,10 @@ func (s *Service) Forward(qso types.Qso, param ...string) error {
 		return errors.New(op).Err(err).Msg("invalid QRZ base URL")
 	}
 
-	payload := "Test"
+	payload, err := adif.ConvertQsoToAdifNoHeader(qso)
+	if err != nil {
+		return errors.New(op).Err(err).Msg("converting QSO to ADIF")
+	}
 	form := url.Values{
 		"KEY":    {s.Config.APIKey},
 		"ACTION": {action},
