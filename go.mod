@@ -3,11 +3,12 @@ module github.com/Station-Manager/forwarding
 go 1.25
 
 require (
+	github.com/Station-Manager/adif v0.0.0-20251212131632-070884a6f26e
 	github.com/Station-Manager/config v0.0.23
 	github.com/Station-Manager/database v0.0.30
 	github.com/Station-Manager/errors v0.0.9
 	github.com/Station-Manager/logging v0.0.8
-	github.com/Station-Manager/types v0.0.59
+	github.com/Station-Manager/types v0.0.65
 	github.com/Station-Manager/utils v0.0.3
 )
 

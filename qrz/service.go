@@ -115,6 +115,11 @@ func (s *Service) Forward(qso types.Qso, param ...string) error {
 	if err != nil {
 		return errors.New(op).Err(err).Msg("converting QSO to ADIF")
 	}
+	//
+	//fmt.Println("Q:", qso)
+	//fmt.Println("P:", payload)
+	//panic("exit")
+
 	form := url.Values{
 		"KEY":    {s.Config.APIKey},
 		"ACTION": {action},
