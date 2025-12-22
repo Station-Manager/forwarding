@@ -8,7 +8,7 @@ require (
 	github.com/Station-Manager/database v0.0.39
 	github.com/Station-Manager/errors v0.0.11
 	github.com/Station-Manager/logging v0.0.10
-	github.com/Station-Manager/types v0.0.65
+	github.com/Station-Manager/types v0.0.66
 	github.com/Station-Manager/utils v0.0.4
 )
 
@@ -44,7 +44,7 @@ require (
 	go.bug.st/serial v1.6.4 // indirect
 	go.uber.org/atomic v1.11.0 // indirect
 	golang.org/x/crypto v0.46.0 // indirect
-	golang.org/x/exp v0.0.0-20251209150349-8475f28825e9 // indirect
+	golang.org/x/exp v0.0.0-20251219203646-944ab1f22d93 // indirect
 	golang.org/x/net v0.48.0 // indirect
 	golang.org/x/sys v0.39.0 // indirect
 	golang.org/x/text v0.32.0 // indirect
@@ -53,5 +53,5 @@ require (
 	modernc.org/libc v1.67.1 // indirect
 	modernc.org/mathutil v1.7.1 // indirect
 	modernc.org/memory v1.11.0 // indirect
-	modernc.org/sqlite v1.40.1 // indirect
+	modernc.org/sqlite v1.41.0 // indirect
 )
