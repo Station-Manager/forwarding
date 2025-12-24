@@ -13,6 +13,7 @@ import (
 	"github.com/Station-Manager/adif"
 	"github.com/Station-Manager/config"
 	"github.com/Station-Manager/database/sqlite"
+	"github.com/Station-Manager/enums/upload/action"
 	"github.com/Station-Manager/errors"
 	"github.com/Station-Manager/logging"
 	"github.com/Station-Manager/types"
@@ -44,6 +45,7 @@ type Response struct {
 	Data   string
 }
 
+// Initialize initializes the Service by injecting dependencies, setting the configuration, and preparing HTTP clients as needed.
 func (s *Service) Initialize() error {
 	const op errors.Op = "forwarder.qrz.Service.Initialize"
 	if s.isInitialized.Load() {
@@ -86,24 +88,19 @@ func (s *Service) Initialize() error {
 	return initErr
 }
 
-const (
-	ActionInsert  = "INSERT"
-	ActionReplace = "REPLACE"
-)
-
+// Forward sends a QSO record to the QRZ.com API, handles the response, and updates the local database with the result.
 func (s *Service) Forward(qso types.Qso, param ...string) error {
 	const op errors.Op = "forwarder.qrz.Forward"
 	if !s.isInitialized.Load() {
 		return errors.New(op).Msg("service not initialized")
 	}
 
-	action := ActionInsert
+	qrzAction := strings.ToUpper(action.Insert.String())
 	if len(param) > 0 {
-		if param[0] != ActionReplace {
-			return errors.New(op).Msgf("unsupported action (%s only): %s", param[0], ActionReplace)
+		if param[0] != action.Update.String() {
+			return errors.New(op).Msgf("unsupported action: %s", param[0])
 		}
-		action = ActionReplace
-
+		qrzAction = "REPLACE"
 	}
 
 	u, err := url.Parse(s.Config.URL)
@@ -115,14 +112,10 @@ func (s *Service) Forward(qso types.Qso, param ...string) error {
 	if err != nil {
 		return errors.New(op).Err(err).Msg("converting QSO to ADIF")
 	}
-	//
-	//fmt.Println("Q:", qso)
-	//fmt.Println("P:", payload)
-	//panic("exit")
 
 	form := url.Values{
 		"KEY":    {s.Config.APIKey},
-		"ACTION": {action},
+		"ACTION": {qrzAction},
 		"ADIF":   {payload},
 	}
 
@@ -157,11 +150,8 @@ func (s *Service) Forward(qso types.Qso, param ...string) error {
 		return errors.New(op).Msgf("insert failed for QRZ.com: %s", r.Reason)
 	}
 
-	if r.Result == "OK" {
-		s.LoggerService.InfoWith().Str("callsign", qso.Call).Str("action", ActionInsert).Msg("QRZ: successful")
-	}
-	if r.Result == "REPLACE" {
-		s.LoggerService.InfoWith().Str("callsign", qso.Call).Str("action", ActionReplace).Msg("QRZ: successful")
+	if r.Result == "OK" || r.Result == "REPLACE" {
+		s.LoggerService.InfoWith().Str("callsign", qso.Call).Str("action", qrzAction).Msg("QRZ: successful")
 	}
 
 	if err = s.updateDatabase(qso); err != nil {
