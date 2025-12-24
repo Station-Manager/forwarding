@@ -6,6 +6,7 @@ require (
 	github.com/Station-Manager/adif v0.0.1
 	github.com/Station-Manager/config v0.0.31
 	github.com/Station-Manager/database v0.0.39
+	github.com/Station-Manager/enums v0.0.5
 	github.com/Station-Manager/errors v0.0.11
 	github.com/Station-Manager/logging v0.0.10
 	github.com/Station-Manager/types v0.0.66
@@ -13,7 +14,6 @@ require (
 )
 
 require (
-	github.com/Station-Manager/enums v0.0.4 // indirect
 	github.com/aarondl/inflect v0.0.2 // indirect
 	github.com/aarondl/null/v8 v8.1.3 // indirect
 	github.com/aarondl/randomize v0.0.2 // indirect
