@@ -95,12 +95,17 @@ func (s *Service) Forward(qso types.Qso, param ...string) error {
 		return errors.New(op).Msg("service not initialized")
 	}
 
-	qrzAction := strings.ToUpper(action.Insert.String())
+	qrzOption := ""
+	qrzAction := strings.ToUpper(action.Insert.String()) // Default
 	if len(param) > 0 {
-		if param[0] != action.Update.String() {
-			return errors.New(op).Msgf("unsupported action: %s", param[0])
+		switch param[0] {
+		case action.Insert.String():
+			// Ignore, already set
+		case action.Update.String():
+			qrzOption = "REPLACE" // QRZ.com doesn't support UPDATE
+		default:
+			return errors.New(op).Msgf("Internal: unsupported action: %s", param[0])
 		}
-		qrzAction = "REPLACE"
 	}
 
 	u, err := url.Parse(s.Config.URL)
@@ -117,6 +122,10 @@ func (s *Service) Forward(qso types.Qso, param ...string) error {
 		"KEY":    {s.Config.APIKey},
 		"ACTION": {qrzAction},
 		"ADIF":   {payload},
+	}
+
+	if qrzOption != "" {
+		form.Add("OPTION", qrzOption)
 	}
 
 	req, err := http.NewRequestWithContext(context.Background(), http.MethodPost, u.String(), strings.NewReader(form.Encode()))
@@ -138,20 +147,20 @@ func (s *Service) Forward(qso types.Qso, param ...string) error {
 	var body []byte
 	body, err = io.ReadAll(resp.Body)
 	if err != nil {
-		return errors.New(op).Err(err).Msg("reading the body")
+		return errors.New(op).Err(err).Msg("QRZ.com: reading the body")
 	}
 
 	var r *Response
-	if r, err = parseInsertResponse(body); err != nil {
-		return errors.New(op).Err(err).Msg("parsing response data")
+	if r, err = parseResponse(body); err != nil {
+		return errors.New(op).Err(err).Msg("QRZ.com: parsing response data")
 	}
 
 	if r.Result == "FAIL" || r.Result == "AUTH" {
-		return errors.New(op).Msgf("insert failed for QRZ.com: %s", r.Reason)
+		return errors.New(op).Msgf("QRZ.com: Action: %s, failed: %s", qrzAction, r.Reason)
 	}
 
 	if r.Result == "OK" || r.Result == "REPLACE" {
-		s.LoggerService.InfoWith().Str("callsign", qso.Call).Str("action", qrzAction).Msg("QRZ: successful")
+		s.LoggerService.InfoWith().Str("callsign", qso.Call).Msgf("QRZ: %s successful", r.Result)
 	}
 
 	if err = s.updateDatabase(qso); err != nil {

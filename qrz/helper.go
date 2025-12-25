@@ -1,22 +1,22 @@
 package qrz
 
 import (
-	"fmt"
-	"github.com/Station-Manager/errors"
 	"html"
 	"net/url"
+
+	"github.com/Station-Manager/errors"
 )
 
-func parseInsertResponse(body []byte) (*Response, error) {
-	const op errors.Op = "qrz."
+func parseResponse(body []byte) (*Response, error) {
+	const op errors.Op = "forwarder.qrz.parseResponse"
 	decoded, err := url.QueryUnescape(string(body))
 	if err != nil {
-		return nil, fmt.Errorf("parseInsertResponse: %w", err)
+		return nil, errors.New(op).Err(err).Msg("url.QueryUnescape") //fmt.Errorf("parseResponse: %w", err)
 	}
 	str := html.UnescapeString(decoded)
 	values, err := url.ParseQuery(str)
 	if err != nil {
-		return nil, fmt.Errorf("parseInsertResponse: %w", err)
+		return nil, errors.New(op).Err(err).Msg("url.ParseQuery") //fmt.Errorf("parseResponse: %w", err)
 	}
 
 	resp := &Response{}
