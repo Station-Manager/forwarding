@@ -160,7 +160,7 @@ func (s *Service) Forward(qso types.Qso, param ...string) error {
 	}
 
 	if r.Result == "OK" || r.Result == "REPLACE" {
-		s.LoggerService.InfoWith().Str("callsign", qso.Call).Msgf("QRZ: %s successful", r.Result)
+		s.LoggerService.InfoWith().Str("callsign", qso.Call).Msgf("QRZ: %s successful", qrzAction)
 	}
 
 	if err = s.updateDatabase(qso); err != nil {
