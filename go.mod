@@ -9,7 +9,7 @@ require (
 	github.com/Station-Manager/enums v0.0.5
 	github.com/Station-Manager/errors v0.0.11
 	github.com/Station-Manager/logging v0.0.10
-	github.com/Station-Manager/types v0.0.66
+	github.com/Station-Manager/types v0.0.68
 	github.com/Station-Manager/utils v0.0.4
 )
 
@@ -26,7 +26,7 @@ require (
 	github.com/gabriel-vasile/mimetype v1.4.12 // indirect
 	github.com/go-playground/locales v0.14.1 // indirect
 	github.com/go-playground/universal-translator v0.18.1 // indirect
-	github.com/go-playground/validator/v10 v10.30.0 // indirect
+	github.com/go-playground/validator/v10 v10.30.1 // indirect
 	github.com/goccy/go-json v0.10.5 // indirect
 	github.com/gofrs/uuid v4.4.0+incompatible // indirect
 	github.com/golang-migrate/migrate/v4 v4.19.1 // indirect
