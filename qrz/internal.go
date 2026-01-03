@@ -10,6 +10,8 @@ import (
 // Returns an error if the database update process fails.
 // We update the database here rather than at the caller because different services have different requirements
 // concerning the fields and values that are stored in the database.
+//
+// However, the qso_upload table is updated by the facade service worker.
 func (s *Service) updateDatabase(qso types.Qso) error {
 	const op errors.Op = "forwarder.qrz.updateDatabase"
 	if qso.ID < 1 {
