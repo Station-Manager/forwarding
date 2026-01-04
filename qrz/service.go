@@ -79,7 +79,7 @@ func (s *Service) Initialize() error {
 		if s.Config.Enabled {
 			s.client = utils.NewHTTPClient(s.Config.HttpTimeoutSec * time.Second)
 		} else {
-			s.LoggerService.InfoWith().Msg("QRZ.com callsign lookup is disabled in the config")
+			s.LoggerService.InfoWith().Msg("QRZ.com QSO forwarding is disabled in the config")
 		}
 
 		s.isInitialized.Store(true)
