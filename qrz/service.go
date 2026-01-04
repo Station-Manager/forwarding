@@ -89,8 +89,27 @@ func (s *Service) Initialize() error {
 }
 
 // Forward sends a QSO record to the QRZ.com API, handles the response, and updates the local database with the result.
+// This method is kept for backward compatibility but now delegates to ForwardNetworkOnly and UpdateDatabase.
 func (s *Service) Forward(qso types.Qso, param ...string) error {
 	const op errors.Op = "forwarder.qrz.Forward"
+
+	// Perform network operation
+	if err := s.ForwardNetworkOnly(qso, param...); err != nil {
+		return errors.New(op).Err(err)
+	}
+
+	// Perform database update
+	if err := s.UpdateDatabase(qso); err != nil {
+		return errors.New(op).Err(err).Msg("updating database")
+	}
+
+	return nil
+}
+
+// ForwardNetworkOnly sends a QSO record to the QRZ.com API and validates the response.
+// Database updates are NOT performed - use UpdateDatabase separately for serialized DB writes.
+func (s *Service) ForwardNetworkOnly(qso types.Qso, param ...string) error {
+	const op errors.Op = "forwarder.qrz.ForwardNetworkOnly"
 	if !s.isInitialized.Load() {
 		return errors.New(op).Msg("service not initialized")
 	}
@@ -130,7 +149,7 @@ func (s *Service) Forward(qso types.Qso, param ...string) error {
 
 	req, err := http.NewRequestWithContext(context.Background(), http.MethodPost, u.String(), strings.NewReader(form.Encode()))
 	if err != nil {
-		return errors.New(op).Err(err).Msg("Failed to create HTTP GET request")
+		return errors.New(op).Err(err).Msg("Failed to create HTTP POST request")
 	}
 
 	req.Header.Set("User-Agent", s.Config.UserAgent)
@@ -161,10 +180,6 @@ func (s *Service) Forward(qso types.Qso, param ...string) error {
 
 	if r.Result == "OK" || r.Result == "REPLACE" {
 		s.LoggerService.InfoWith().Str("callsign", qso.Call).Msgf("QRZ: %s successful", qrzAction)
-	}
-
-	if err = s.updateDatabase(qso); err != nil {
-		return errors.New(op).Err(err).Msg("updating database")
 	}
 
 	return nil

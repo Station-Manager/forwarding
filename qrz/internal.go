@@ -6,14 +6,15 @@ import (
 	"github.com/Station-Manager/utils"
 )
 
-// updateDatabase updates the local database with the provided QSO record.
+// UpdateDatabase updates the local database with the provided QSO record.
 // Returns an error if the database update process fails.
 // We update the database here rather than at the caller because different services have different requirements
 // concerning the fields and values that are stored in the database.
 //
 // However, the qso_upload table is updated by the facade service worker.
-func (s *Service) updateDatabase(qso types.Qso) error {
-	const op errors.Op = "forwarder.qrz.updateDatabase"
+// This method is now public to support serialized database writes through the facade's DB worker.
+func (s *Service) UpdateDatabase(qso types.Qso) error {
+	const op errors.Op = "forwarder.qrz.UpdateDatabase"
 	if qso.ID < 1 {
 		return errors.New(op).Msgf("invalid QSO ID, unable to update: %d", qso.ID)
 	}
